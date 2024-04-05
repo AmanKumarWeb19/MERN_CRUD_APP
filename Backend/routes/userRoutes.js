@@ -57,48 +57,88 @@
 //   userRouter,
 // };
 
+// const express = require("express");
+// const userRouter = express.Router();
+// const jwt = require("jsonwebtoken");
+// const bcrypt = require("bcrypt");
+// const { UserModel } = require("../models/userModel");
+
+// userRouter.post("/register", async (req, res) => {
+//   const { email, pass, location, age } = req.body;
+//   try {
+//     bcrypt.hash(pass, 5, async (err, hash) => {
+//       if (err) {
+//         res.send({ msg: "Err hashing password", error: err.message });
+//       } else {
+//         const user = new UserModel({ email, pass: hash, location, age });
+//         await user.save();
+//         res.send({ msg: "register Successful!" });
+//       }
+//     });
+//   } catch (error) {
+//     res.status(400).send({ msg: "Can't Register!", error: error.message });
+//   }
+// });
+
+// /**................................................................................................ */
+
+// userRouter.post("/login", async (req, res) => {
+//   const { email, pass } = req.body;
+//   try {
+//     const user = await UserModel.find({ email });
+
+//     if (user) {
+//       bcrypt.compare(pass, user[0].pass, (err, result) => {
+//         const token = jwt.sign({ course: "backend" }, "masai");
+//         if (result) {
+//           res.send({ msg: "Login Successful", token: token });
+//         } else {
+//           res.status(400).send({ msg: "Wrong Credential" });
+//         }
+//       });
+//     }
+//   } catch (error) {
+//     res.status(400).send({ msg: "Can't Login!", error: error.message });
+//   }
+// });
+
 const express = require("express");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { UserModel } = require("../models/userModel");
 
-userRouter.post("/register", async (req, res) => {
-  const { email, pass, location, age } = req.body;
+userRouter.get("/", async (req, res) => {
+  const payload = req.body;
   try {
-    bcrypt.hash(pass, 5, async (err, hash) => {
-      if (err) {
-        res.send({ msg: "Err hashing password", error: err.message });
-      } else {
-        const user = new UserModel({ email, pass: hash, location, age });
-        await user.save();
-        res.send({ msg: "register Successful!" });
-      }
-    });
+    const user = await UserModel.find(payload);
+    res.status(200).send(user);
   } catch (error) {
-    res.status(400).send({ msg: "Can't Register!", error: error.message });
+    res.status(400).send({ msg: "not get user!", error: error.message });
   }
 });
 
-/**................................................................................................ */
+userRouter.post("/register", async (req, res) => {
+  const payload = req.body;
+  try {
+    const user = new UserModel(payload);
+    await user.save();
+    res.status(200).send({ msg: "Register Done!" });
+  } catch (error) {
+    res.status(400).send({ msg: "Register not Done!", error: error.message });
+  }
+});
 
 userRouter.post("/login", async (req, res) => {
   const { email, pass } = req.body;
   try {
-    const user = await UserModel.find({ email });
-
-    if (user) {
-      bcrypt.compare(pass, user[0].pass, (err, result) => {
-        const token = jwt.sign({ course: "backend" }, "masai");
-        if (result) {
-          res.send({ msg: "Login Successful", token: token });
-        } else {
-          res.status(400).send({ msg: "Wrong Credential" });
-        }
-      });
+    const user = await UserModel({ email, pass });
+    if (user.length > 0) {
+      const token = jwt.sign({ name: "aman" }, "bruce");
+      res.status(200).send({ msg: "Login Done!", token: token });
     }
   } catch (error) {
-    res.status(400).send({ msg: "Can't Login!", error: error.message });
+    res.status(400).send({ msg: "Login not Done!", error: error.message });
   }
 });
 
