@@ -2,11 +2,15 @@ require("dotenv").config();
 const express = require("express");
 const { connection } = require("./config/db");
 const { userRouter } = require("./routes/userRoutes");
-const app = express();
+const { noteRouter } = require("./routes/noteRoutes");
+const { auth } = require("./middleware/auth.middleware");
 
+const app = express();
 app.use(express.json());
 
 app.use("/users", userRouter);
+app.use(auth);
+app.use("/notes", noteRouter);
 
 app.get("/", (req, res) => {
   res.send("WELCOME TO MY SERVER");

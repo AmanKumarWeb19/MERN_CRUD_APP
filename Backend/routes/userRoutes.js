@@ -85,12 +85,17 @@ userRouter.post("/register", async (req, res) => {
 userRouter.post("/login", async (req, res) => {
   const { email, pass } = req.body;
   try {
-    const user = await UserModel.find({ email, pass });
-    if (user.length > 0) {
-      const token = jwt.sign({ name: "aman" }, "bruce");
-      res.send({ msg: "Login Successful!", token: token });
-    } else {
-      res.status(400).send({ msg: "Can't able Login!", error: error.message });
+    const user = await UserModel.find({ email });
+
+    if (user) {
+      bcrypt.compare(pass, user[0].pass, (err, result) => {
+        const token = jwt.sign({ course: "backend" }, "masai");
+        if (result) {
+          res.send({ msg: "Login Successful", token: token });
+        } else {
+          res.status(400).send({ msg: "Wrong Credential" });
+        }
+      });
     }
   } catch (error) {
     res.status(400).send({ msg: "Can't Login!", error: error.message });
@@ -99,37 +104,22 @@ userRouter.post("/login", async (req, res) => {
 
 /**................................................................................................ */
 
-userRouter.get("/details", (req, res) => {
-  const token = req.headers.authorization;
-  try {
-    jwt.verify(token, "bruce", (err, decoded) => {
-      if (decoded) {
-        res.send({ msg: "Details Page" });
-      } else {
-        res.send({ msg: "Login First!", err: err.message });
-      }
-    });
-  } catch (error) {
-    res.send({ msg: "Access denied Login First!", error: error.message });
-  }
-});
+// userRouter.get("/details", (req, res) => {
+//   const token = req.headers.authorization;
+//   try {
+//     jwt.verify(token, "bruce", (err, decoded) => {
+//       if (decoded) {
+//         res.send({ msg: "Details Page" });
+//       } else {
+//         res.send({ msg: "Login First!", err: err.message });
+//       }
+//     });
+//   } catch (error) {
+//     res.send({ msg: "Access denied Login First!", error: error.message });
+//   }
+// });
 
-/**............................................................................................... */
-
-userRouter.get("/movie", (req, res) => {
-  const token = req.headers.authorization;
-  try {
-    jwt.verify(token, "bruce", (err, decoded) => {
-      if (decoded) {
-        res.send({ msg: "Movie Page" });
-      } else {
-        res.send({ msg: "Login First!", err: err.message });
-      }
-    });
-  } catch (error) {
-    res.send({ msg: "Access denied Login First!", error: error.message });
-  }
-});
+// /**............................................................................................... */
 
 module.exports = {
   userRouter,
