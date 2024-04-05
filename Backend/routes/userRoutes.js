@@ -60,14 +60,21 @@
 const express = require("express");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const { UserModel } = require("../models/userModel");
 
 userRouter.post("/register", async (req, res) => {
-  const payload = req.body;
+  const { email, pass, location, age } = req.body;
   try {
-    const user = new UserModel(payload);
-    await user.save();
-    res.send({ msg: "register Successful!" });
+    bcrypt.hash(pass, 5, async (err, hash) => {
+      if (err) {
+        res.send({ msg: "Err hashing password", error: err.message });
+      } else {
+        const user = new UserModel({ email, pass: hash, location, age });
+        await user.save();
+        res.send({ msg: "register Successful!" });
+      }
+    });
   } catch (error) {
     res.status(400).send({ msg: "Can't Register!", error: error.message });
   }
